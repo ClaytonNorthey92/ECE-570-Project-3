@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+	<body id="page_body">
+	<!-- 674x502 image -->
+		<!--img src="localmap.gif"-->
+		<div id="map_body" style="background-image: url('localmap.gif'); height: 502px; width: 674px">
+		</div>
+		<span id="dot_template" style="color: red; display: none">X</span>
+		<button id="step_button" onclick="one_step()"><h1>Step Once</h1></button>
+		<h1 id="result_message"></h1>
+		<button id="refresh_page" onclick="location.reload()"><h1>Start Over</h1></button>
+	</body>
+	<script>
+		console.log('page loaded successfully');
+		var steps = 0;
+		// set dimensions of map
+		var x_limit = 674,
+			y_limit = 502,
+			car_count = 500;
+		console.log("x limit", x_limit);
+		console.log("y limit", y_limit);
+
+		var dot_template = document.getElementById('dot_template');
+		var page_body = document.getElementById('map_body');
+
+		function get_random(max){
+			return Math.round((Math.random() * 1000)%max);
+		}
+
+		function generate_id(x_coordinate, y_coordinate){
+			return "dot-" + x_coordinate + "-" + y_coordinate;
+		}
+
+		var cars = [];
+
+		for (var i=0;i<car_count;i++){
+			var car_tmp = {
+				x_coordinate: get_random(x_limit),
+				y_coordinate: get_random(y_limit),
+				package_seen: false,
+				is_in_path: function(package){
+					var between_x = (this.x_coordinate < package.destination.x_coordinate && this.x_coordinate > package.source.x_coordinate) ||
+						   			(this.x_coordinate < package.source.x_coordinate && this.x_coordinate > package.destination.x_coordinate);
+					var between_y = (this.y_coordinate < package.destination.y_coordinate && this.y_coordinate > package.source.y_coordinate) ||
+						   			(this.y_coordinate < package.source.y_coordinate && this.y_coordinate > package.destination.y_coordinate);
+					var angle = Math.min(Math.atan((Math.abs(this.y_coordinate - destination.y_coordinate)/Math.abs(this.x_coordinate - destination.x_coordinate))),
+										 Math.atan((Math.abs(this.x_coordinate - destination.x_coordinate)/Math.abs(this.y_coordinate - destination.y_coordinate))));
+					var found = this.id === package.destination.id;
+					return (between_y && between_x && (angle < 0.79)) // 45 degree angle or less
+						    || found;
+				}
+			};
+			car_tmp.id = generate_id(car_tmp.x_coordinate, car_tmp.y_coordinate);
+			cars.push(car_tmp);
+			var new_dot = dot_template.cloneNode(true);
+			new_dot.id = car_tmp.id; // relate car object to dot on map
+			new_dot.setAttribute("style", "color: red; position: absolute; top: " + car_tmp.y_coordinate + "px; left: " + car_tmp.x_coordinate + "px;");
+			page_body.appendChild(new_dot);
+		}
+
+		var source_index = get_random(cars.length);
+		var destination_index = get_random(cars.length);
+		var source = cars[source_index];
+		var destination = cars[destination_index];
+		
+		console.log("here is the list of cars", cars);
+		console.log("source car: ", source);
+		console.log("destination car: ", destination);
+
+		var sourceElement = document.getElementById(source.id);
+		var destinationElement = document.getElementById(destination.id);
+		
+		sourceElement.innerHTML = "S";
+		sourceElement.style.color = 'blue';
+		sourceElement.style['font-size'] = "30px"
+		sourceElement.style['z-index'] = '1';
+
+		destinationElement.innerHTML = "D";
+		destinationElement.style.color = 'blue';
+		destinationElement.style['font-size'] = "30px"
+		destinationElement.style['z-index'] = '1';
+
+		var active_cars = [];
+		active_cars.push(source);
+
+		var package = {
+			source: source,
+			destination: destination
+		}
+
+
+		function one_step(){
+			console.log('taking step');
+			console.log('sending package', package);
+			_perform_step();
+			_stop_if_destination_found();
+		}
+
+		function _perform_step(){
+			// this performs the broadcast
+			steps++;
+			var current_active_count = active_cars.length;
+			for (var i=0;i<current_active_count;i++){
+				if (active_cars[i].package_seen){
+					continue;
+				}
+				active_cars[i].package_seen = true;
+				for (var c=0;c<cars.length;c++){
+					if (meets_conditions(cars[c], active_cars[i])){
+						var car_tmp = document.getElementById(cars[c].id);
+						car_tmp.style.color = 'blue';
+						active_cars.push(cars[c]);
+					}
+				}
+			}
+		}
+
+		function _stop_if_destination_found(){
+			for (var i=0;i<active_cars.length;i++){
+				if (active_cars[i].id === destination.id){
+					var button = document.getElementById('step_button');
+					button.style.display = 'none';
+					var result = document.getElementById('result_message');
+					result.innerHTML = 'FOUND DESTINATION IN ' + steps + ' STEPS!!';
+				}
+			}
+		}
+
+		function meets_conditions(found_car, active_car){
+			return (_in_broadcast_range(found_car, active_car) &&
+			   		found_car.is_in_path(package));
+		}
+
+		function _in_broadcast_range(car1, car2){
+			return Math.abs(car1.x_coordinate-car2.x_coordinate) < 100 &&
+				   Math.abs(car1.y_coordinate-car2.y_coordinate) < 100;
+		}
+
+	</script>
+</html>
