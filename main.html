@@ -8,9 +8,16 @@
 		<span id="dot_template" style="color: red; display: none">X</span>
 		<button id="step_button" onclick="one_step()"><h1>Step Once</h1></button>
 		<h1 id="result_message"></h1>
-		<button id="refresh_page" onclick="location.reload()"><h1>Start Over</h1></button>
+		<div>
+			<label for="seed_input">Random Seed:</label>
+			<input id="seed_input" value="1"/>
+		</div>
+		<button id="refresh_page" onclick="refresh_map()"><h1>Start Over</h1></button>
 	</body>
+	<script type="text/javascript" src="randomseed.js"></script>
 	<script>
+		var seed = get_seed_from_url();
+		Math.seedrandom(seed);
 		console.log('page loaded successfully');
 		var steps = 0;
 		// set dimensions of map
@@ -37,7 +44,10 @@
 		for (var i=0;i<car_count;i++){
 			var valid_car_locations = get_valid_car_locations();
 			var random_index = get_random(valid_car_locations.length);
-			var random_car_id = valid_car_locations[random_index];
+			var random_car_id = null;
+			while(!random_car_id){
+				random_car_id = valid_car_locations[random_index];
+			}
 			var car_tmp = {
 				x_coordinate: parseInt(random_car_id.split('-')[1]),
 				y_coordinate: parseInt(random_car_id.split('-')[2]),
@@ -108,6 +118,7 @@
 			steps++;
 			var current_active_count = active_cars.length;
 
+
 			for (var i=0;i<current_active_count;i++){
 				if (active_cars[i].package_seen){
 					continue;
@@ -145,6 +156,24 @@
 				   Math.abs(car1.y_coordinate-car2.y_coordinate) < 100;
 		}
 
+
+		function get_seed_from_url(){
+			var url = window.location.href;
+			var requested_seed = url.split('?seed=');
+			var new_seed = 1;
+			if (requested_seed.length > 1){
+				new_seed = requested_seed[1];
+			}
+			console.log('seeding random as', new_seed);
+			var seed_input = document.getElementById('seed_input');
+			seed_input.value = new_seed;
+			return new_seed;
+		}
+
+		function refresh_map(){
+			var seed_value = document.getElementById('seed_input').value;
+			window.location.href = window.location.href.split('?seed=')[0] + '?seed=' + seed_value;
+		}
 
 		/*
 			DATA FOR VALID LOCATIONS ON MAP TO PLACE CARS
