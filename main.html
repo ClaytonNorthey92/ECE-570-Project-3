@@ -97,10 +97,12 @@
 		var active_cars = [];
 		active_cars.push(source);
 
+		var packet_count = 1;
+
 		var package = {
 			source: source,
 			destination: destination,
-			size: 1024
+			size: 1024 * packet_count
 		}
 
 
@@ -129,8 +131,10 @@
 				for (var c=0;c<cars.length;c++){
 					if (meets_conditions(cars[c], active_cars[i])){
 						var car_tmp = document.getElementById(cars[c].id);
-						car_tmp.style.color = 'blue';
-						active_cars.push(cars[c]);
+						if (car_tmp.style.color != 'blue' || car_tmp.id===destination.id){
+							car_tmp.style.color = 'blue';
+							active_cars.push(cars[c]);
+						}
 					}
 				}
 			}
@@ -142,7 +146,9 @@
 					var button = document.getElementById('step_button');
 					button.style.display = 'none';
 					var result = document.getElementById('result_message');
-					result.innerHTML = 'FOUND DESTINATION IN ' + steps + ' STEPS!! <br> THIS TOOK '+ (total_bits_sent/rate)*1000 +' MILLISECONDS';
+					var hops = active_cars.length;
+					result.innerHTML = 'FOUND DESTINATION IN ' + steps + ' STEPS!! <br> THIS TOOK '+ (total_bits_sent/rate)*1000 +' MILLISECONDS' + 
+										'<br> WITH ' + hops + ' HOPS';
 				}
 			}
 		}
