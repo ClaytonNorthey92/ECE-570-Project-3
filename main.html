@@ -12,7 +12,7 @@
 			<label for="seed_input">Random Seed:</label>
 			<input id="seed_input" value="1"/>
 		</div>
-		<button id="refresh_page" onclick="refresh_map()"><h1>Start Over With Random Seed</h1></button>
+		<button id="refresh_page" onclick="refresh_map()"><h1>Start Over and Apply Random Seed</h1></button>
 	</body>
 	<script type="text/javascript" src="randomseed.js"></script>
 	<script>
@@ -116,6 +116,7 @@
 		function _perform_step(){
 			// this performs the broadcast
 			steps++;
+			active_cars = shuffle(active_cars);
 			var current_active_count = active_cars.length;
 
 
@@ -173,6 +174,25 @@
 		function refresh_map(){
 			var seed_value = document.getElementById('seed_input').value;
 			window.location.href = window.location.href.split('?seed=')[0] + '?seed=' + seed_value;
+		}
+
+		function shuffle(array) {
+		  var currentIndex = array.length, temporaryValue, randomIndex;
+
+		  // While there remain elements to shuffle...
+		  while (0 !== currentIndex) {
+
+		    // Pick a remaining element...
+		    randomIndex = Math.floor(Math.random() * currentIndex);
+		    currentIndex -= 1;
+
+		    // And swap it with the current element.
+		    temporaryValue = array[currentIndex];
+		    array[currentIndex] = array[randomIndex];
+		    array[randomIndex] = temporaryValue;
+		  }
+
+		  return array;
 		}
 
 		/*
